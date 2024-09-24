@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "../../store/store";
 import { GenericActions } from "../../store/genericSlice";
-import { collection, onSnapshot, DocumentData, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, onSnapshot, DocumentData, doc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
-import { setDoc } from "firebase/firestore/lite";
 
 type ListnerState = {
     name?: string
@@ -101,5 +100,13 @@ export const useFireStore = <T extends DocumentData>(path: string) => {
         }
     }
 
-    return {loadCollection, loadDocument, create, update, remove}
+    const set = async (id: string, data: any) => {
+        try {
+            return await setDoc(doc(db, path, id), data);
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    return {loadCollection, loadDocument, create, update, remove, set}
 }
