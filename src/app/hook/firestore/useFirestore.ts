@@ -103,7 +103,7 @@ export const useFireStore = <T extends DocumentData>(path: string) => {
     const set = async (id: string, data: any) => {
         try {
             return await setDoc(doc(db, path, id), data);
-        } catch (error) {
+        } catch (error: any) {
             console.log(error)
         }
     }
