@@ -19,6 +19,7 @@
     "firebase": "^10.13.1",
     "npm": "^10.8.1",
     "react": "^18.2.0",
+    "react-calendar": "^5.0.0",
     "react-datepicker": "^7.3.0",
     "react-dom": "^18.2.0",
     "react-filepond": "^7.1.2",
