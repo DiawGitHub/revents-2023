@@ -7,7 +7,7 @@ type Props = {
 }
 export default function EventListAttendee({attendee}: Props) {
   return (
-    <List.Item as={Link} to={`/profiles/${attendee.id}`}>
+    <List.Item as={Link} to={`/profiles/${attendee.id}`} key={attendee.id}>
         <Image size='mini' circular src={attendee.photoURL} />
     </List.Item>
   )
