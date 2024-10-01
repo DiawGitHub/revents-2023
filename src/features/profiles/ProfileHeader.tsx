@@ -1,11 +1,40 @@
 import { Button, Divider, Grid, Header, Item, Reveal, Segment, Statistic } from "semantic-ui-react";
 import { Profile } from "../../app/types/profile";
+import { auth, db } from "../../app/config/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { useAppDispatch } from "../../app/store/store";
+import { actions } from "./profileSlice";
+import { batchFollowToggle } from "../../app/actions/firestoreActions";
 
 type Props = {
     profile: Profile
 }
 
-export default function ProfileHeader({profile}: Props) {
+export default function ProfileHeader({ profile }: Props) {
+    const [loading, setLoading] = useState(false);
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        const docRef = doc(db, `profiles/${profile.id}/followers/${auth.currentUser?.uid}`);
+        getDoc(docRef).then(docSnap => {
+            dispatch(actions.setFollowing({ id: profile.id, isFollowing: docSnap.exists() }))
+        })
+    }, [dispatch, profile.id])
+
+    async function handleFollowToggle(follow: boolean) {
+        if (!profile.id || !auth.currentUser?.uid) return;
+        setLoading(true);
+        try {
+            await batchFollowToggle(profile, follow);
+            dispatch(actions.setFollowing({ id: profile.id, isFollowing: follow }));
+        } catch (error: any) {
+            console.log(error.message)
+        } finally {
+            setLoading(false);
+        }       
+    }
+
     return (
         <Segment>
             <Grid>
@@ -23,15 +52,26 @@ export default function ProfileHeader({profile}: Props) {
                     </Item.Group>
                 </Grid.Column>
                 <Grid.Column width={4}>
-                    <Statistic label='Followers' value={10} />
-                    <Statistic label='Following' value={5} />
+                    <Statistic label='Followers' value={profile.followerCount || 0} />
+                    <Statistic label='Following' value={profile.followingCount || 0} />
                     <Divider />
                     <Reveal animated="move">
-                        <Reveal.Content visible style={{width: '100%'}}>
-                            <Button fluid color="teal" content='Following' />
+                        <Reveal.Content visible style={{ width: '100%' }}>
+                            <Button
+                                fluid
+                                color="teal"
+                                content={profile.isFollowing ? 'Following' : 'Not Following'}
+                            />
                         </Reveal.Content>
-                        <Reveal.Content hidden style={{width: '100%'}}>
-                            <Button fluid color="red" content='Unfollow' />
+                        <Reveal.Content hidden style={{ width: '100%' }}>
+                            <Button
+                                basic
+                                fluid
+                                color={profile.isFollowing ? 'red' : 'green'}
+                                content={profile.isFollowing ? 'Unfollow' : 'Follow'}
+                                onClick={() => handleFollowToggle(!profile.isFollowing)}
+                                loading={loading}
+                            />
                         </Reveal.Content>
                     </Reveal>
                 </Grid.Column>
